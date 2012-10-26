@@ -15,6 +15,7 @@ class TriMesh( object ):
     def __init__( self ):
         self.vs = []
         self.faces = []
+        self.vtxDistDic = {}
         
         self.__face_normals = None
         self.__face_areas = None
@@ -952,7 +953,29 @@ class TriMesh( object ):
         out.close()
         
         print '[OFF written to "%s"]' % (fname,)
-
+    
+    def setVtxDist(self, initVtxIdx) :
+        vtxIdxList = []
+        for i in range(len(self.vs)):
+            vtxIdxList.append(i)
+        k=0        
+        self.vtxDistDic[initVtxIdx] = k
+        vtxIdxList.remove(initVtxIdx)
+        currentVtxList = self.vertex_vertex_neighbors(initVtxIdx)
+        while(len(vtxIdxList)!=0):
+            tempList = []
+            k = k+1
+            for vtx in currentVtxList : vtxIdxList.remove(vtx)
+            for vtx in currentVtxList :
+                self.vtxDistDic[vtx] = k
+                oneRingVtxList = self.vertex_vertex_neighbors(vtx)
+                for oneRingVtx in oneRingVtxList :
+                    if oneRingVtx in vtxIdxList and oneRingVtx not in tempList :
+                        tempList.append(oneRingVtx)
+            currentVtxList = tempList
+        
+        
+        
 ## We can't pickle anything that doesn't have a name visible at module scope.
 ## In order to allow pickling of class TriMesh, we'll make a reference to the inner HalfEdge class
 ## here at the module level.
@@ -990,22 +1013,19 @@ class Mesh() :
 		self.vs = _vs
 		self.faces = _faces
 
-
 #TestCode###		
 mayaMesh = Mesh()
-pSphereName = mc.polySphere()[0]
-mc.polyTriangulate(pSphereName)
-mayaMesh.initMeshFromMayaMesh(pSphereName)
+mc.polyTriangulate("man")
+mayaMesh.initMeshFromMayaMesh("man")
 
 myMesh = TriMesh()
 myMesh.append(mayaMesh)
-myMesh.write_OBJ("C:/Users/cimple/Documents/maya/projects/autoRig/scenes/testSphere.obj")
-###
+#myMesh.write_OBJ("C:/Users/cimple/Documents/maya/projects/autoRig/scenes/testSphere.obj")
 
 
-
-
-
-
-
+for i in range(len(myMesh.vs)):
+    sphere = mc.polySphere(r=0.1*myMesh.vtxDistDic[i])
+    vtxPos = myMesh.vs[i]
+    mc.move(vtxPos[0], vtxPos[1], vtxPos[2], absolute=True)
 		
+
