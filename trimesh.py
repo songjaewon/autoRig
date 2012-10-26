@@ -957,3 +957,11 @@ class TriMesh( object ):
 ## In order to allow pickling of class TriMesh, we'll make a reference to the inner HalfEdge class
 ## here at the module level.
 
+
+#import mesh data from obj file
+#mesh should be triagulated
+
+myMesh = TriMesh()
+myMesh = myMesh.FromOBJ_FileName("C:/Users/cimple/Documents/maya/projects/autoRig/scenes/testCube.obj")
+print myMesh.vs
+print myMesh.faces
