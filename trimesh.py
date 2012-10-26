@@ -961,7 +961,51 @@ class TriMesh( object ):
 #import mesh data from obj file
 #mesh should be triagulated
 
+import maya.cmds as mc
+
+class Mesh() :
+	def __init__(self):
+		self.vs = []
+		self.faces = []
+	
+	def faceVtxList(self, face):
+		tmp = mc.polyInfo(face, fv=True)
+		idx = tmp[0].find(':')
+		sparse = tmp[0][idx+1:]
+		result = sparse.split()
+		vtxList = []
+		for r in result :
+			vtxList.append(int(r))
+		return vtxList
+	
+	def initMeshFromMayaMesh(self, meshName):
+		_vs = []
+		_faces = []
+		numV = mc.polyEvaluate(meshName, v=True)
+		numF = mc.polyEvaluate(meshName, f=True)
+		for i in range(numV):
+			_vs.append(mc.pointPosition(meshName+".vtx["+str(i)+"]"))
+		for i in range(numF):
+			_faces.append(self.faceVtxList(meshName+".f["+str(i)+"]"))
+		self.vs = _vs
+		self.faces = _faces
+
+
+#TestCode###		
+mayaMesh = Mesh()
+pSphereName = mc.polySphere()[0]
+mc.polyTriangulate(pSphereName)
+mayaMesh.initMeshFromMayaMesh(pSphereName)
+
 myMesh = TriMesh()
-myMesh = myMesh.FromOBJ_FileName("C:/Users/cimple/Documents/maya/projects/autoRig/scenes/testCube.obj")
-print myMesh.vs
-print myMesh.faces
+myMesh.append(mayaMesh)
+myMesh.write_OBJ("C:/Users/cimple/Documents/maya/projects/autoRig/scenes/testSphere.obj")
+###
+
+
+
+
+
+
+
+		
